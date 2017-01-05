@@ -1,0 +1,13 @@
+[package]
+name = "enimda"
+version = "0.1.0"
+authors = ["Anton Smolin"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/embali/enimda-rs/"
+homepage = "https://github.com/embali/enimda-rs/"
+description = """Entropy-based image border detection algorithm"""
+
+[dependencies]
+rand = "0.3.15"
+image = "0.10.4"
