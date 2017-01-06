@@ -29,9 +29,9 @@ Find if image has any borders:
 .. code-block:: rust
 
     extern crate image;
-    use image::GenericImage;
-
     extern crate enimda;
+
+    use image::GenericImage;
     use enimda::Enimda;
 
 
