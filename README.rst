@@ -40,8 +40,8 @@ Find if image has any borders:
     fn main() {
         let source = Enimda::new("source.jpeg");
 
-        let output = source.scan(2048, 0.25, 0.5, 1.0, 2048, true);
-        println!("{:?}", output.borders);
+        let borders = source.scan(2048, 0.25, 0.5, 1.0, 2048, true);
+        println!("{:?}", borders);
 
         let mut im = image::open(&Path::new("source.jpeg")).unwrap();
         let (w, h) = im.dimensions();
