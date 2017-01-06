@@ -41,8 +41,8 @@ Find if image has any borders:
         let borders = em.scan(2048, 0.25, 0.5, 1.0, 2048, true);
         println!("{:?}", borders);
 
-        let (w, h) = em.source.dimensions();
-        let cropped = em.source.sub_image(
+        let (w, h) = em.src.dimensions();
+        let cropped = em.src.sub_image(
                 borders[3] + 1,
                 borders[0] + 1,
                 w - (borders[1] + borders[3] + 2),

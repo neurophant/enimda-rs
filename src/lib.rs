@@ -20,20 +20,20 @@ pub trait Enimda {
 
 impl Enimda for str {
     fn new(src: &str) -> Image {
-        Image { source: image::open(&Path::new(src)).unwrap() }
+        Image { src: image::open(&Path::new(src)).unwrap() }
     }
 }
 
 
 impl Enimda for String {
     fn new(src: &String) -> Image {
-        Image { source: image::open(&Path::new(src)).unwrap() }
+        Image { src: image::open(&Path::new(src)).unwrap() }
     }
 }
 
 
 impl Enimda for DynamicImage {
     fn new(src: &DynamicImage) -> Image {
-        Image { source: src.clone() }
+        Image { src: src.clone() }
     }
 }

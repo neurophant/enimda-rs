@@ -7,16 +7,16 @@ use utils::{chop, entropy};
 
 
 pub struct Image {
-    pub source: DynamicImage
+    pub src: DynamicImage
 }
 
 
 impl Image {
     fn convert(&self, size: u32) -> (f32, ImageBuffer<Luma<u8>, Vec<u8>>) {
-        let mut converted = self.source.clone();
-        let (w, h) = converted.dimensions();
+        let mut conv = self.src.clone();
+        let (w, h) = conv.dimensions();
 
-        let multiplier = match w > size || h > size {
+        let mul = match w > size || h > size {
             true => match w > h {
                 true => w as f32 / size as f32,
                 false => h as f32 / size as f32
@@ -24,25 +24,25 @@ impl Image {
             false => 1.0
         };
 
-        if multiplier != 1.0 {
-            converted = converted.resize(size, size, FilterType::Lanczos3);
+        if mul != 1.0 {
+            conv = conv.resize(size, size, FilterType::Lanczos3);
         }
 
-        (multiplier, grayscale(&converted))
+        (mul, grayscale(&conv))
     }
 
     pub fn scan(&self,
                 size: u32,
                 depth: f32,
-                threshold: f32,
-                percentage: f32,
-                limit: u32,
+                thres: f32,
+                ppt: f32,
+                lim: u32,
                 deep: bool) -> Vec<u32> {
-        let (multiplier, mut converted) = self.convert(size);
+        let (mul, mut conv) = self.convert(size);
         let mut borders = Vec::new();
 
         for side in 0..4 {
-            let mut strips = chop(&mut converted, percentage, limit);
+            let mut strips = chop(&mut conv, ppt, lim);
             let (w, h) = strips.dimensions();
             let height = (depth * h as f32).round() as u32;
             let mut border = 0;
@@ -56,8 +56,8 @@ impl Image {
                     }
                 }
 
-                let mut subborder = 0;
-                let mut delta = threshold;
+                let mut sub = 0;
+                let mut delta = thres;
                 for center in (start..height).rev() {
                     let upper = entropy(&mut strips, 0, border, w, center - border);
                     let lower = entropy(&mut strips, 0, center, w, center - border);
@@ -65,27 +65,27 @@ impl Image {
                         true => upper as f32 / lower as f32,
                         false => delta
                     };
-                    if diff < delta && diff < threshold {
+                    if diff < delta && diff < thres {
                         delta = diff;
-                        subborder = center;
+                        sub = center;
                     } 
                 }
 
-                if subborder == 0 || border == subborder {
+                if sub == 0 || border == sub {
                     break;
                 }
 
-                border = subborder;
+                border = sub;
 
                 if !deep {
                     break;
                 }
             }
 
-            borders.push((border as f32 * multiplier) as u32);
+            borders.push((border as f32 * mul) as u32);
 
             if side != 3 {
-                converted = rotate270(&converted);
+                conv = rotate270(&conv);
             }
         }
 
