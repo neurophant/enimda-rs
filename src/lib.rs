@@ -8,32 +8,35 @@ use image::DynamicImage;
 
 
 mod utils;
-mod img;
 
-use img::Image;
+use utils::process;
 
 
 pub trait Enimda {
-    fn new(src: &Self) -> Image;
+    fn scan(src: &Self, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
+        -> Vec<u32>;
 }
 
 
 impl Enimda for str {
-    fn new(src: &str) -> Image {
-        Image { src: image::open(&Path::new(src)).unwrap() }
+    fn scan(src: &str, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
+            -> Vec<u32> {
+        process(&image::open(&Path::new(src)).unwrap(), size, depth, thres, ppt, lim, deep)
     }
 }
 
 
 impl Enimda for String {
-    fn new(src: &String) -> Image {
-        Image { src: image::open(&Path::new(src)).unwrap() }
+    fn scan(src: &String, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
+            -> Vec<u32> {
+        process(&image::open(&Path::new(src)).unwrap(), size, depth, thres, ppt, lim, deep)
     }
 }
 
 
 impl Enimda for DynamicImage {
-    fn new(src: &DynamicImage) -> Image {
-        Image { src: src.clone() }
+    fn scan(src: &DynamicImage, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
+            -> Vec<u32> {
+        process(src, size, depth, thres, ppt, lim, deep)
     }
 }
