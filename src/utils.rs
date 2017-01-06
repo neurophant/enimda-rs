@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 use std::cmp::min;
 
-extern crate rand;
 use rand::{thread_rng, Rng};
 
-extern crate image;
 use image::{GenericImage, ImageBuffer, Luma};
 
 
