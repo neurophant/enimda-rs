@@ -37,15 +37,14 @@ Find if image has any borders:
 
     fn main() {
         let mut im = image::open(&Path::new(&path)).unwrap();
-        let borders = Enimda::scan(&im, 2048, 0.25, 0.5, 1.0, 2048, true);
+        let borders = im.enimda(2048, 0.25, 0.5, 1.0, 2048, true);
         println!("{:?}", borders);
 
         let (w, h) = im.dimensions();
-        let cropped = im.sub_image(
-                borders[3] + 1,
-                borders[0] + 1,
-                w - (borders[1] + borders[3] + 2),
-                h - (borders[0] + borders[2] + 2))
+        let cropped = im.sub_image(borders[3] + 1,
+                                   borders[0] + 1,
+                                   w - (borders[1] + borders[3] + 2),
+                                   h - (borders[0] + borders[2] + 2))
             .to_image();
         cropped.save("cropped.jpeg").unwrap();
     }

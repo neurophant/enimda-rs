@@ -1,42 +1,76 @@
 extern crate rand;
 extern crate image;
 
-use std::path::Path;
-use std::string::String;
 
 use image::DynamicImage;
+use image::imageops::rotate270;
 
 
 mod utils;
 
-use utils::process;
+use utils::{convert, chop, entropy};
 
 
 pub trait Enimda {
-    fn scan(src: &Self, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
+    fn enimda(&self, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
         -> Vec<u32>;
 }
 
 
-impl Enimda for str {
-    fn scan(src: &str, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
-            -> Vec<u32> {
-        process(&image::open(&Path::new(src)).unwrap(), size, depth, thres, ppt, lim, deep)
-    }
-}
-
-
-impl Enimda for String {
-    fn scan(src: &String, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
-            -> Vec<u32> {
-        process(&image::open(&Path::new(src)).unwrap(), size, depth, thres, ppt, lim, deep)
-    }
-}
-
-
 impl Enimda for DynamicImage {
-    fn scan(src: &DynamicImage, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
+    fn enimda(&self, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
             -> Vec<u32> {
-        process(src, size, depth, thres, ppt, lim, deep)
+        let (mul, mut conv) = convert(self, size);
+        let mut borders = Vec::new();
+
+        for side in 0..4 {
+            let mut strips = chop(&mut conv, ppt, lim);
+            let (w, h) = strips.dimensions();
+            let height = (depth * h as f32).round() as u32;
+            let mut border = 0;
+
+            loop {
+                let mut start = border + 1;
+                for center in (border + 1)..height {
+                    if entropy(&mut strips, 0, border, w, center) > 0.0 {
+                        start = center;
+                        break;
+                    }
+                }
+
+                let mut sub = 0;
+                let mut delta = thres;
+                for center in (start..height).rev() {
+                    let upper = entropy(&mut strips, 0, border, w, center - border);
+                    let lower = entropy(&mut strips, 0, center, w, center - border);
+                    let diff = match lower != 0.0 {
+                        true => upper as f32 / lower as f32,
+                        false => delta
+                    };
+                    if diff < delta && diff < thres {
+                        delta = diff;
+                        sub = center;
+                    } 
+                }
+
+                if sub == 0 || border == sub {
+                    break;
+                }
+
+                border = sub;
+
+                if !deep {
+                    break;
+                }
+            }
+
+            borders.push((border as f32 * mul) as u32);
+
+            if side != 3 {
+                conv = rotate270(&conv);
+            }
+        }
+
+        borders
     }
 }
