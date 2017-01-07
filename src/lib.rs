@@ -1,10 +1,8 @@
 extern crate rand;
 extern crate image;
 
-
 use image::DynamicImage;
 use image::imageops::rotate270;
-
 
 mod utils;
 

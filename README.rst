@@ -31,12 +31,12 @@ Find if image has any borders:
     extern crate image;
     extern crate enimda;
 
+    use std::path::Path;
     use image::GenericImage;
     use enimda::Enimda;
 
-
     fn main() {
-        let mut im = image::open(&Path::new(&path)).unwrap();
+        let mut im = image::open(&Path::new("source.jpeg")).unwrap();
         let borders = im.enimda(2048, 0.25, 0.5, 1.0, 2048, true);
         println!("{:?}", borders);
 
