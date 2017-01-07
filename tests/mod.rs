@@ -18,7 +18,7 @@ macro_rules! assert_borders {
 
 #[test]
 fn tst_bordered_gif() {
-    assert_borders!("bordered.gif", vec![22, 86, 16, 86]);
+    assert_borders!("bordered.gif", vec![41, 0, 39, 0]);
 }
 
 
