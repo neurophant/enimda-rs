@@ -6,8 +6,7 @@ ENtropy-based IMage border Detection Algorithm: detect border or whitespace offs
 Algorithm (simplified)
 ----------------------
 
-For each side of the image starting from top, rotating image counterclockwise
-to keep side of interest on top:
+For each side of the image starting from top, rotating image counterclockwise to keep side of interest on top:
 
 * Get upper block 25% of image height
 * Get lower block with the same height as the upper one
