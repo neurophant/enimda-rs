@@ -10,14 +10,26 @@ use utils::{convert, chop, entropy};
 
 
 pub trait Enimda {
-    fn enimda(&self, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
-        -> Vec<u32>;
+    fn enimda(&self,
+              size: u32,
+              depth: f32,
+              thres: f32,
+              ppt: f32,
+              lim: u32,
+              deep: bool)
+              -> Vec<u32>;
 }
 
 
 impl Enimda for DynamicImage {
-    fn enimda(&self, size: u32, depth: f32, thres: f32, ppt: f32, lim: u32, deep: bool)
-            -> Vec<u32> {
+    fn enimda(&self,
+              size: u32,
+              depth: f32,
+              thres: f32,
+              ppt: f32,
+              lim: u32,
+              deep: bool)
+              -> Vec<u32> {
         let (mul, mut conv) = convert(self, size);
         let mut borders = Vec::new();
 
@@ -43,12 +55,12 @@ impl Enimda for DynamicImage {
                     let lower = entropy(&mut strips, 0, center, w, center - border);
                     let diff = match lower != 0.0 {
                         true => upper as f32 / lower as f32,
-                        false => delta
+                        false => delta,
                     };
                     if diff < delta && diff < thres {
                         delta = diff;
                         sub = center;
-                    } 
+                    }
                 }
 
                 if sub == 0 || border == sub {

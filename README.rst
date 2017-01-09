@@ -23,10 +23,10 @@ For each side of the image starting from top, rotating image counterclockwise to
     :width: 300
     :height: 300
 
-Usage
+Example
 -----
 
-Find if image has any borders:
+Find image borders:
 
 .. code-block:: rust
 
