@@ -3,6 +3,8 @@ ENIMDA
 
 ENtropy-based IMage border Detection Algorithm: detect border or whitespace offset for every side of image, including GIF (first frame only).
 
+.. image:: https://img.shields.io/crates/v/enimda.svg
+    :alt: https://crates.io/crates/enimda
 .. image:: https://travis-ci.org/embali/enimda-rs.svg?branch=master
     :alt: https://travis-ci.org/embali/enimda-rs
 
@@ -39,7 +41,7 @@ Find image borders:
 
     fn main() {
         let mut im = image::open(&Path::new("source.jpeg")).unwrap();
-        let borders = im.enimda(2048, 0.25, 0.5, 1.0, 2048, true);
+        let borders = im.enimda(2048, 0.25, 0.5, 1.0, 2048, true).unwrap();
         println!("{:?}", borders);
 
         let (w, h) = im.dimensions();

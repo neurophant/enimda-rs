@@ -1,6 +1,8 @@
 extern crate rand;
 extern crate image;
 
+use std::error::Error;
+
 use image::DynamicImage;
 use image::imageops::rotate270;
 
@@ -17,7 +19,7 @@ pub trait Enimda {
               ppt: f32,
               lim: u32,
               deep: bool)
-              -> Vec<u32>;
+              -> Result<Vec<u32>, Box<Error>>;
 }
 
 
@@ -29,12 +31,12 @@ impl Enimda for DynamicImage {
               ppt: f32,
               lim: u32,
               deep: bool)
-              -> Vec<u32> {
-        let (mul, mut conv) = convert(self, size);
+              -> Result<Vec<u32>, Box<Error>> {
+        let (mul, mut conv) = try!(convert(self, size));
         let mut borders = Vec::new();
 
         for side in 0..4 {
-            let mut strips = chop(&mut conv, ppt, lim);
+            let mut strips = try!(chop(&mut conv, ppt, lim));
             let (w, h) = strips.dimensions();
             let height = (depth * h as f32).round() as u32;
             let mut border = 0;
@@ -42,7 +44,7 @@ impl Enimda for DynamicImage {
             loop {
                 let mut start = border + 1;
                 for center in (border + 1)..height {
-                    if entropy(&mut strips, 0, border, w, center) > 0.0 {
+                    if try!(entropy(&mut strips, 0, border, w, center)) > 0.0 {
                         start = center;
                         break;
                     }
@@ -51,8 +53,8 @@ impl Enimda for DynamicImage {
                 let mut sub = 0;
                 let mut delta = thres;
                 for center in (start..height).rev() {
-                    let upper = entropy(&mut strips, 0, border, w, center - border);
-                    let lower = entropy(&mut strips, 0, center, w, center - border);
+                    let upper = try!(entropy(&mut strips, 0, border, w, center - border));
+                    let lower = try!(entropy(&mut strips, 0, center, w, center - border));
                     let diff = match lower != 0.0 {
                         true => upper as f32 / lower as f32,
                         false => delta,
@@ -81,6 +83,6 @@ impl Enimda for DynamicImage {
             }
         }
 
-        borders
+        Ok(borders)
     }
 }

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::cmp::min;
+use std::error::Error;
 
 use rand::{thread_rng, Rng};
 
@@ -7,7 +8,9 @@ use image::{GenericImage, DynamicImage, ImageBuffer, Luma, FilterType};
 use image::imageops::colorops::grayscale;
 
 
-pub fn convert(im: &DynamicImage, size: u32) -> (f32, ImageBuffer<Luma<u8>, Vec<u8>>) {
+pub fn convert(im: &DynamicImage,
+               size: u32)
+               -> Result<(f32, ImageBuffer<Luma<u8>, Vec<u8>>), Box<Error>> {
     let mut conv = im.clone();
     let (w, h) = conv.dimensions();
 
@@ -25,20 +28,20 @@ pub fn convert(im: &DynamicImage, size: u32) -> (f32, ImageBuffer<Luma<u8>, Vec<
         conv = conv.resize(size, size, FilterType::Lanczos3);
     }
 
-    (mul, grayscale(&conv))
+    Ok((mul, grayscale(&conv)))
 }
 
 
 pub fn chop(conv: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
             ppt: f32,
             lim: u32)
-            -> ImageBuffer<Luma<u8>, Vec<u8>> {
+            -> Result<ImageBuffer<Luma<u8>, Vec<u8>>, Box<Error>> {
     if ppt < 0.0 || ppt > 1.0 {
         panic!("0.0 <= ppt <= 1.0 expected");
     }
 
     if ppt == 1.0 || lim == 0 {
-        return conv.clone();
+        return Ok(conv.clone());
     }
 
     let (w, h) = conv.dimensions();
@@ -64,7 +67,7 @@ pub fn chop(conv: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
         strips.copy_from(&conv.sub_image(*row, 0, 1, h), i as u32, 0);
     }
 
-    strips
+    Ok(strips)
 }
 
 
@@ -73,7 +76,7 @@ pub fn entropy(strip: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
                y: u32,
                width: u32,
                height: u32)
-               -> f32 {
+               -> Result<f32, Box<Error>> {
     let sub = strip.sub_image(x, y, width, height);
     let (w, h) = sub.dimensions();
     let len = (w * h) as f32;
@@ -83,8 +86,8 @@ pub fn entropy(strip: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
         acc
     });
 
-    hm.values().fold(0f32, |acc, &x| {
+    Ok(hm.values().fold(0f32, |acc, &x| {
         let f = x as f32 / len;
         acc - (f * f.log2())
-    })
+    }))
 }

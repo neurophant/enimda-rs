@@ -1,6 +1,6 @@
 [package]
 name = "enimda"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Anton Smolin"]
 license = "MIT"
 readme = "README.rst"
@@ -10,4 +10,4 @@ description = """Entropy-based image border detection algorithm"""
 
 [dependencies]
 rand = "0.3.15"
-image = "0.10.4"
+image = "0.12.2"
