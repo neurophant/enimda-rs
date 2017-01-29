@@ -3,12 +3,12 @@ ENIMDA
 
 ENtropy-based IMage border Detection Algorithm: detect border or whitespace offset for every side of image, including GIF (first frame only).
 
-.. image:: https://img.shields.io/crates/v/enimda.svg
+|crates| |travisci|
+
+.. |crates| image:: https://img.shields.io/crates/v/enimda.svg
     :alt: https://crates.io/crates/enimda
-    :width: 100pt
-.. image:: https://travis-ci.org/embali/enimda-rs.svg?branch=master
+.. |travisci| image:: https://travis-ci.org/embali/enimda-rs.svg?branch=master
     :alt: https://travis-ci.org/embali/enimda-rs
-    :width: 100pt
 
 Algorithm (simplified)
 ----------------------
