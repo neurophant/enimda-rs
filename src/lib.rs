@@ -34,17 +34,17 @@ pub fn enimda(path: &Path,
             if fppt < 0.0 || fppt > 1.0 {
                 panic!("0.0 <= ppt <= 1.0 expected");
             }
+            let frames = paginate(frames, fppt, flim)?;
 
             let mut decoder = Decoder::new(File::open(path)?);
             decoder.set(ColorOutput::Indexed);
             let mut reader = decoder.read_info().unwrap();
             let mut screen = Screen::new(&reader);
 
-            let iframes = paginate(frames, fppt, flim)?;
-            let mut variants = Vec::new();
-            let mut iframe = 0;
+            let mut borders = vec![0, 0, 0, 0];
+            let mut i = 0;
             while let Some(frame) = reader.read_next_frame().unwrap() {
-                if iframes.iter().any(|&x| x == iframe) {
+                if fppt == 1.0 || flim == 0 || frames.iter().any(|&x| x == i) {
                     screen.blit(&frame)?;
                     let mut buf: Vec<u8> = Vec::new();
                     for pixel in screen.pixels.iter() {
@@ -54,19 +54,15 @@ pub fn enimda(path: &Path,
                         buf.push(pixel.a);
                     }
                     let im = ImageRgba8(ImageBuffer::from_raw(width, height, buf).unwrap());
-                    variants.push(scan(&im, size, depth, thres, sppt, slim, deep)?);
-                }
-
-                iframe += 1;
-            }
-
-            let mut borders = vec![0, 0, 0, 0];
-            for variant in variants.iter() {
-                for i in 0..variant.len() {
-                    if variant[i] == 0 || borders[i] < variant[i] {
-                        borders[i] = variant[i];
+                    let variant = scan(&im, size, depth, thres, sppt, slim, deep)?;
+                    for j in 0..borders.len() {
+                        if variant[j] == 0 || borders[j] < variant[j] {
+                            borders[j] = variant[j];
+                        }
                     }
                 }
+
+                i += 1;
             }
 
             borders
