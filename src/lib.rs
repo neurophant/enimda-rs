@@ -1,88 +1,60 @@
 extern crate rand;
 extern crate image;
+extern crate gif;
+extern crate gif_dispose;
 
+use std::path::Path;
+use std::fs::File;
 use std::error::Error;
 
-use image::DynamicImage;
-use image::imageops::rotate270;
+use image::{ImageRgba8, ImageFormat, ImageBuffer};
+use gif::{Decoder, SetParameter, ColorOutput};
+use gif_dispose::Screen;
+
 
 mod utils;
 
-use utils::{convert, chop, entropy};
+use utils::{info, scan};
 
 
-pub trait Enimda {
-    fn enimda(&self,
+pub fn enimda(path: &Path,
+              fppt: f32,
+              flim: u32,
               size: u32,
               depth: f32,
               thres: f32,
-              ppt: f32,
-              lim: u32,
-              deep: bool)
-              -> Result<Vec<u32>, Box<Error>>;
-}
-
-
-impl Enimda for DynamicImage {
-    fn enimda(&self,
-              size: u32,
-              depth: f32,
-              thres: f32,
-              ppt: f32,
-              lim: u32,
+              sppt: f32,
+              slim: u32,
               deep: bool)
               -> Result<Vec<u32>, Box<Error>> {
-        let (mul, mut conv) = try!(convert(self, size));
-        let mut borders = Vec::new();
 
-        for side in 0..4 {
-            let mut strips = try!(chop(&mut conv, ppt, lim));
-            let (w, h) = strips.dimensions();
-            let height = (depth * h as f32).round() as u32;
-            let mut border = 0;
-
-            loop {
-                let mut start = border + 1;
-                for center in (border + 1)..height {
-                    if try!(entropy(&mut strips, 0, border, w, center)) > 0.0 {
-                        start = center;
-                        break;
-                    }
+    let (format, width, height, frames) = info(path)?;
+    Ok(match format {
+        ImageFormat::GIF => {
+            let mut variants = Vec::new();
+            let mut decoder = Decoder::new(File::open(path)?);
+            decoder.set(ColorOutput::Indexed);
+            let mut reader = decoder.read_info().unwrap();
+            let mut screen = Screen::new(&reader);
+            while let Some(frame) = reader.read_next_frame().unwrap() {
+                screen.blit(&frame)?;
+                let mut buf: Vec<u8> = Vec::new();
+                for i in 0..screen.pixels.len() {
+                    buf.push(screen.pixels[i].r);
+                    buf.push(screen.pixels[i].g);
+                    buf.push(screen.pixels[i].b);
+                    buf.push(screen.pixels[i].a);
                 }
-
-                let mut sub = 0;
-                let mut delta = thres;
-                for center in (start..height).rev() {
-                    let upper = try!(entropy(&mut strips, 0, border, w, center - border));
-                    let lower = try!(entropy(&mut strips, 0, center, w, center - border));
-                    let diff = match lower != 0.0 {
-                        true => upper as f32 / lower as f32,
-                        false => delta,
-                    };
-                    if diff < delta && diff < thres {
-                        delta = diff;
-                        sub = center;
-                    }
-                }
-
-                if sub == 0 || border == sub {
-                    break;
-                }
-
-                border = sub;
-
-                if !deep {
-                    break;
-                }
+                let im = ImageRgba8(ImageBuffer::from_raw(width, height, buf).unwrap());
+                variants.push(scan(&im, size, depth, thres, sppt, slim, deep)?);
             }
-
-            borders.push((border as f32 * mul) as u32);
-
-            if side != 3 {
-                conv = rotate270(&conv);
-            }
+            println!("{:?}", variants);
+            //
+            vec![0, 0, 0, 0]
         }
-
-        Ok(borders)
-    }
+        _ => {
+            let im = image::open(path)?;
+            scan(&im, size, depth, thres, sppt, slim, deep)?
+        }
+    })
 }
