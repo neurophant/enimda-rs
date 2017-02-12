@@ -41,6 +41,26 @@ pub fn info(path: &Path) -> Result<(ImageFormat, u32, u32, u32), Box<Error>> {
 }
 
 
+pub fn paginate(total: u32, ppt: f32, lim: u32) -> Result<Vec<u32>, Box<Error>> {
+    let count = (1.0 / ppt).round() as u32;
+    let (int, rem) = (total / count, total % count);
+
+    let mut indexes = Vec::new();
+    let mut rng = thread_rng();
+    for page in 0..int {
+        indexes.push(rng.gen_range(page * count, (page + 1) * count));
+    }
+    if rem != 0 {
+        indexes.push(rng.gen_range(int * count, total));
+    }
+    rng.shuffle(&mut indexes);
+    let len = indexes.len();
+    indexes.truncate(min(len, lim as usize));
+
+    Ok(indexes)
+}
+
+
 fn convert(im: &DynamicImage,
            size: u32)
            -> Result<(f32, ImageBuffer<Luma<u8>, Vec<u8>>), Box<Error>> {
@@ -78,23 +98,8 @@ fn chop(conv: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
     }
 
     let (w, h) = conv.dimensions();
-
-    let count = (1.0 / ppt).round() as u32;
-    let (int, rem) = (w / count, w % count);
-
-    let mut rows = Vec::new();
-    let mut rng = thread_rng();
-    for page in 0..int {
-        rows.push(rng.gen_range(page * count, (page + 1) * count));
-    }
-    if rem != 0 {
-        rows.push(rng.gen_range(int * count, w));
-    }
-    rng.shuffle(&mut rows);
-    let mut len = rows.len();
-    rows.truncate(min(len, lim as usize));
-
-    len = rows.len();
+    let rows = paginate(w, ppt, lim)?;
+    let len = rows.len();
     let mut strips: ImageBuffer<Luma<u8>, Vec<u8>> = ImageBuffer::new(len as u32, h);
     for (i, row) in rows.iter().enumerate() {
         strips.copy_from(&conv.sub_image(*row, 0, 1, h), i as u32, 0);

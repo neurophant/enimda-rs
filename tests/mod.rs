@@ -10,7 +10,7 @@ use enimda::enimda;
 macro_rules! assert_borders {
     ($name:expr, $has:expr) => ({
         let borders = enimda(&Path::new(&format!("./tests/images/{}", $name)),
-                             1.0, 0, 256, 0.25, 0.5, 0.1, 32, false).unwrap();
+                             0.1, 10, 256, 0.25, 0.5, 0.1, 32, false).unwrap();
         let sum: u32 = borders.iter().sum();
         assert_eq!(sum != 0, $has)
     })
@@ -51,7 +51,7 @@ fn test_fail_ppt() {
 macro_rules! assert_borders_full {
     ($name:expr, $result:expr) => ({
         let borders = enimda(&Path::new(&format!("./tests/images/{}", $name)),
-                             1.0, 0, 2048, 0.25, 0.5, 1.0, 2048, true).unwrap();
+                             1.0, 1000, 2048, 0.25, 0.5, 1.0, 2048, true).unwrap();
         assert_eq!(borders, $result)
     })
 }

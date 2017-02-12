@@ -14,7 +14,7 @@ use gif_dispose::Screen;
 
 mod utils;
 
-use utils::{info, scan};
+use utils::{info, paginate, scan};
 
 
 pub fn enimda(path: &Path,
@@ -31,26 +31,45 @@ pub fn enimda(path: &Path,
     let (format, width, height, frames) = info(path)?;
     Ok(match format {
         ImageFormat::GIF => {
-            let mut variants = Vec::new();
+            if fppt < 0.0 || fppt > 1.0 {
+                panic!("0.0 <= ppt <= 1.0 expected");
+            }
+
             let mut decoder = Decoder::new(File::open(path)?);
             decoder.set(ColorOutput::Indexed);
             let mut reader = decoder.read_info().unwrap();
             let mut screen = Screen::new(&reader);
+
+            let iframes = paginate(frames, fppt, flim)?;
+            let mut variants = Vec::new();
+            let mut iframe = 0;
             while let Some(frame) = reader.read_next_frame().unwrap() {
-                screen.blit(&frame)?;
-                let mut buf: Vec<u8> = Vec::new();
-                for i in 0..screen.pixels.len() {
-                    buf.push(screen.pixels[i].r);
-                    buf.push(screen.pixels[i].g);
-                    buf.push(screen.pixels[i].b);
-                    buf.push(screen.pixels[i].a);
+                if iframes.iter().any(|&x| x == iframe) {
+                    screen.blit(&frame)?;
+                    let mut buf: Vec<u8> = Vec::new();
+                    for pixel in screen.pixels.iter() {
+                        buf.push(pixel.r);
+                        buf.push(pixel.g);
+                        buf.push(pixel.b);
+                        buf.push(pixel.a);
+                    }
+                    let im = ImageRgba8(ImageBuffer::from_raw(width, height, buf).unwrap());
+                    variants.push(scan(&im, size, depth, thres, sppt, slim, deep)?);
                 }
-                let im = ImageRgba8(ImageBuffer::from_raw(width, height, buf).unwrap());
-                variants.push(scan(&im, size, depth, thres, sppt, slim, deep)?);
+
+                iframe += 1;
             }
-            println!("{:?}", variants);
-            //
-            vec![0, 0, 0, 0]
+
+            let mut borders = vec![0, 0, 0, 0];
+            for variant in variants.iter() {
+                for i in 0..variant.len() {
+                    if variant[i] == 0 || borders[i] < variant[i] {
+                        borders[i] = variant[i];
+                    }
+                }
+            }
+
+            borders
         }
         _ => {
             let im = image::open(path)?;
