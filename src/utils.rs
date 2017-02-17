@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use std::collections::{HashSet, HashMap};
+use std::iter::FromIterator;
 use std::cmp::min;
 use std::error::Error;
 use std::path::Path;
@@ -41,7 +42,7 @@ pub fn info(path: &Path) -> Result<(ImageFormat, u32, u32, u32), Box<Error>> {
 }
 
 
-pub fn paginate(total: u32, ppt: f32, lim: u32) -> Result<Vec<u32>, Box<Error>> {
+pub fn paginate(total: u32, ppt: f32, lim: u32) -> Result<HashSet<u32>, Box<Error>> {
     let count = (1.0 / ppt).round() as u32;
     let (int, rem) = (total / count, total % count);
 
@@ -57,7 +58,7 @@ pub fn paginate(total: u32, ppt: f32, lim: u32) -> Result<Vec<u32>, Box<Error>> 
     let len = indexes.len();
     indexes.truncate(min(len, lim as usize));
 
-    Ok(indexes)
+    Ok(HashSet::from_iter(indexes.iter().cloned()))
 }
 
 
@@ -99,8 +100,7 @@ fn chop(conv: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
 
     let (w, h) = conv.dimensions();
     let rows = paginate(w, ppt, lim)?;
-    let len = rows.len();
-    let mut strips: ImageBuffer<Luma<u8>, Vec<u8>> = ImageBuffer::new(len as u32, h);
+    let mut strips: ImageBuffer<Luma<u8>, Vec<u8>> = ImageBuffer::new(rows.len() as u32, h);
     for (i, row) in rows.iter().enumerate() {
         strips.copy_from(&conv.sub_image(*row, 0, 1, h), i as u32, 0);
     }

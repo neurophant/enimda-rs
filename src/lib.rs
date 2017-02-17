@@ -44,7 +44,7 @@ pub fn enimda(path: &Path,
             let mut borders = vec![0, 0, 0, 0];
             let mut i = 0;
             while let Some(frame) = reader.read_next_frame().unwrap() {
-                if fppt == 1.0 || flim == 0 || frames.iter().any(|&x| x == i) {
+                if fppt == 1.0 || flim == 0 || frames.contains(&i) {
                     screen.blit(&frame)?;
                     let mut buf: Vec<u8> = Vec::new();
                     for pixel in screen.pixels.iter() {
