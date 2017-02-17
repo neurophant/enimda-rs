@@ -40,7 +40,13 @@ Find image borders:
     use enimda::enimda;
 
     fn main() {
-        println!("{:?}", enimda(&Path::new("source.jpeg"), 1.0, 100, 2048, 0.25, 0.5, 1.0, 2048, true).unwrap());
+        println!("{:?}", enimda(&Path::new("source.jpeg"),
+                                1.0, 100,
+                                2048,
+                                0.25, 0.5,
+                                1.0, 2048,
+                                true)
+                                .unwrap());
     }
 
 Demo
