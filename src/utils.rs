@@ -9,7 +9,8 @@ use std::io::prelude::*;
 use rand::{thread_rng, Rng};
 
 use image;
-use image::{GenericImage, ImageRgba8, DynamicImage, ImageBuffer, Luma, FilterType, ImageFormat, guess_format};
+use image::{GenericImage, ImageRgba8, DynamicImage, ImageBuffer, Luma, FilterType, ImageFormat,
+            guess_format};
 use image::imageops::rotate270;
 use image::imageops::colorops::grayscale;
 use gif::{Decoder, SetParameter, ColorOutput};
@@ -63,11 +64,17 @@ fn paginate(total: u32, ppt: f32, lim: u32) -> Result<HashSet<u32>, Box<Error>> 
 }
 
 
-pub fn decompose(path: &Path, width: u32, height: u32, frames: u32, fppt: f32, flim: u32) -> Result<Vec<DynamicImage>, Box<Error>> {
-    if fppt < 0.0 || fppt > 1.0 {
+pub fn decompose(path: &Path,
+                 width: u32,
+                 height: u32,
+                 frames: u32,
+                 ppt: f32,
+                 lim: u32)
+                 -> Result<Vec<DynamicImage>, Box<Error>> {
+    if ppt < 0.0 || ppt > 1.0 {
         panic!("0.0 <= ppt <= 1.0 expected");
     }
-    let frames = paginate(frames, fppt, flim)?;
+    let frames = paginate(frames, ppt, lim)?;
 
     let mut decoder = Decoder::new(File::open(path)?);
     decoder.set(ColorOutput::Indexed);
@@ -77,7 +84,7 @@ pub fn decompose(path: &Path, width: u32, height: u32, frames: u32, fppt: f32, f
     let mut i = 0;
     let mut ims = Vec::new();
     while let Some(frame) = reader.read_next_frame().unwrap() {
-        if fppt == 1.0 || flim == 0 || frames.contains(&i) {
+        if ppt == 1.0 || lim == 0 || frames.contains(&i) {
             screen.blit(&frame)?;
             let mut buf: Vec<u8> = Vec::new();
             for pixel in screen.pixels.iter() {
