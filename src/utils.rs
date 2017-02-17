@@ -9,10 +9,11 @@ use std::io::prelude::*;
 use rand::{thread_rng, Rng};
 
 use image;
-use image::{GenericImage, DynamicImage, ImageBuffer, Luma, FilterType, ImageFormat, guess_format};
+use image::{GenericImage, ImageRgba8, DynamicImage, ImageBuffer, Luma, FilterType, ImageFormat, guess_format};
 use image::imageops::rotate270;
 use image::imageops::colorops::grayscale;
 use gif::{Decoder, SetParameter, ColorOutput};
+use gif_dispose::Screen;
 
 
 pub fn info(path: &Path) -> Result<(ImageFormat, u32, u32, u32), Box<Error>> {
@@ -42,7 +43,7 @@ pub fn info(path: &Path) -> Result<(ImageFormat, u32, u32, u32), Box<Error>> {
 }
 
 
-pub fn paginate(total: u32, ppt: f32, lim: u32) -> Result<HashSet<u32>, Box<Error>> {
+fn paginate(total: u32, ppt: f32, lim: u32) -> Result<HashSet<u32>, Box<Error>> {
     let count = (1.0 / ppt).round() as u32;
     let (int, rem) = (total / count, total % count);
 
@@ -59,6 +60,39 @@ pub fn paginate(total: u32, ppt: f32, lim: u32) -> Result<HashSet<u32>, Box<Erro
     indexes.truncate(min(len, lim as usize));
 
     Ok(HashSet::from_iter(indexes.iter().cloned()))
+}
+
+
+pub fn decompose(path: &Path, width: u32, height: u32, frames: u32, fppt: f32, flim: u32) -> Result<Vec<DynamicImage>, Box<Error>> {
+    if fppt < 0.0 || fppt > 1.0 {
+        panic!("0.0 <= ppt <= 1.0 expected");
+    }
+    let frames = paginate(frames, fppt, flim)?;
+
+    let mut decoder = Decoder::new(File::open(path)?);
+    decoder.set(ColorOutput::Indexed);
+    let mut reader = decoder.read_info().unwrap();
+    let mut screen = Screen::new(&reader);
+
+    let mut i = 0;
+    let mut ims = Vec::new();
+    while let Some(frame) = reader.read_next_frame().unwrap() {
+        if fppt == 1.0 || flim == 0 || frames.contains(&i) {
+            screen.blit(&frame)?;
+            let mut buf: Vec<u8> = Vec::new();
+            for pixel in screen.pixels.iter() {
+                buf.push(pixel.r);
+                buf.push(pixel.g);
+                buf.push(pixel.b);
+                buf.push(pixel.a);
+            }
+            ims.push(ImageRgba8(ImageBuffer::from_raw(width, height, buf).unwrap()));
+        }
+
+        i += 1;
+    }
+
+    Ok(ims)
 }
 
 
