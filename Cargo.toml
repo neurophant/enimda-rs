@@ -7,6 +7,7 @@ readme = "README.rst"
 repository = "https://github.com/embali/enimda-rs/"
 homepage = "https://github.com/embali/enimda-rs/"
 description = """Entropy-based image border detection algorithm"""
+exclude = ["tests/images/*"]
 
 [dependencies]
 rand = "0.3.15"
