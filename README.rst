@@ -47,7 +47,7 @@ Find image borders:
                              2048,
                              0.25, 0.5,
                              1.0, 2048,
-                             true).unwrap()
+                             true).unwrap();
         println!("{:?}", borders);
     }
 
