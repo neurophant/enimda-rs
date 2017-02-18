@@ -28,11 +28,10 @@ pub fn info(path: &Path) -> Result<(ImageFormat, u32, u32, u32), Box<Error>> {
 
     let frames = match format {
         ImageFormat::GIF => {
-            let mut decoder = Decoder::new(File::open(path)?);
-            decoder.set(ColorOutput::Indexed);
+            let decoder = Decoder::new(File::open(path)?);
             let mut reader = decoder.read_info().unwrap();
             let mut frames = 0;
-            while let Some(_) = reader.read_next_frame().unwrap() {
+            while let Some(_) = reader.next_frame_info().unwrap() {
                 frames += 1;
             }
             frames

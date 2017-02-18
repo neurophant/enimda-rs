@@ -6,9 +6,11 @@ ENtropy-based IMage border Detection Algorithm: detect border or whitespace offs
 |crates| |travisci|
 
 .. |crates| image:: https://img.shields.io/crates/v/enimda.svg
-    :alt: https://crates.io/crates/enimda
+    :target: https://crates.io/crates/enimda
+    :alt: latest version at crates.io
 .. |travisci| image:: https://travis-ci.org/embali/enimda-rs.svg?branch=master
-    :alt: https://travis-ci.org/embali/enimda-rs
+    :target: https://travis-ci.org/embali/enimda-rs
+    :alt: travis ci build status
 
 Algorithm (simplified)
 ----------------------
@@ -40,13 +42,13 @@ Find image borders:
     use enimda::enimda;
 
     fn main() {
-        println!("{:?}", enimda(&Path::new("source.jpeg"),
-                                1.0, 100,
-                                2048,
-                                0.25, 0.5,
-                                1.0, 2048,
-                                true)
-                                .unwrap());
+        let borders = enimda(&Path::new("source.jpeg"),
+                             1.0, 100,
+                             2048,
+                             0.25, 0.5,
+                             1.0, 2048,
+                             true).unwrap()
+        println!("{:?}", borders);
     }
 
 Demo
