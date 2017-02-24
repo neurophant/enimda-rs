@@ -2,7 +2,7 @@
 //!
 //! # Example
 //!
-//! ```rust,ignore,no_run
+//! ```rust,ignore
 //! extern crate enimda;
 //!
 //! use std::path::Path;

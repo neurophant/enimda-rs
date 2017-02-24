@@ -66,4 +66,3 @@ Tests
 .. code-block: bash
 
     cargo test
-    cargo test -- --ignored
