@@ -35,27 +35,36 @@ use utils::{decompose, scan};
 /// enimda function result
 #[derive(Debug, PartialEq)]
 pub struct Borders {
-    /// Border offset from top
+    /// Border offset from the top
     pub top: u32,
-    /// Border offset from right
+    /// Border offset from the right
     pub right: u32,
-    /// Border offset from bottom
+    /// Border offset from the bottom
     pub bottom: u32,
-    /// Border offset from left
+    /// Border offset from the left
     pub left: u32,
 }
 
 /// Scan image and find its borders
-/// * `path` - path to image file
-/// * `fppt` - percent of frames to use in case of animated image, optimization parameter
-/// * `flim` - absolute limit of frames to use in case of animated image, optimization parameter
-/// * `size` - fit image to this size to improve performance, in pixels, optimization parameter
-/// * `depth` - percent of pixels (depth) to use for scanning, use 0.25 if not sure what are you
+///
+/// `path` - path to image file
+///
+/// `fppt` - percent of frames to use in case of animated image, optimization parameter
+///
+/// `flim` - absolute limit of frames to use in case of animated image, optimization parameter
+///
+/// `size` - fit image to this size to improve performance, in pixels, optimization parameter
+///
+/// `depth` - percent of pixels (depth) to use for scanning, use 0.25 if not sure what are you
 /// doing
-/// * `thres` - threshold, aggressiveness of algorithm, use 0.5 if not sure what are you doing
-/// * `sppt` - percent of columns to use for scan, optimization parameter
-/// * `slim` - absolute limit of columns to use for scan, optimization parameter
-/// * `deep` - set to true for less performant but accurate and to false for quick but inaccurate,
+///
+/// `thres` - threshold, aggressiveness of algorithm, use 0.5 if not sure what are you doing
+///
+/// `sppt` - percent of columns to use for scan, optimization parameter
+///
+/// `slim` - absolute limit of columns to use for scan, optimization parameter
+///
+/// `deep` - set to true for less performant but accurate and to false for quick but inaccurate,
 /// optimization parameter
 pub fn enimda(path: &Path,
               fppt: f32,
