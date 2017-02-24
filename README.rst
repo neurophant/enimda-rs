@@ -1,7 +1,8 @@
 ENIMDA
 ======
 
-ENtropy-based IMage border Detection Algorithm: detect border or whitespace offset for every side of image, including GIF (first frame only).
+ENtropy-based IMage border Detection Algorithm: detect border or whitespace offset for every side of image,
+supports animated GIFs.
 
 |crates| |travisci|
 
@@ -11,6 +12,11 @@ ENtropy-based IMage border Detection Algorithm: detect border or whitespace offs
 .. |travisci| image:: https://travis-ci.org/embali/enimda-rs.svg?branch=master
     :target: https://travis-ci.org/embali/enimda-rs
     :alt: travis ci build status
+
+Documentation
+-------------
+
+`https://docs.rs/enimda/ <https://docs.rs/enimda/>`_
 
 Algorithm (simplified)
 ----------------------
@@ -30,7 +36,7 @@ For each side of the image starting from top, rotating image counterclockwise to
     :height: 300
 
 Example
------
+-------
 
 Find image borders:
 
@@ -42,12 +48,8 @@ Find image borders:
     use enimda::enimda;
 
     fn main() {
-        let borders = enimda(&Path::new("source.jpeg"),
-                             1.0, 100,
-                             2048,
-                             0.25, 0.5,
-                             1.0, 2048,
-                             true).unwrap();
+        let path = Path::new("source.jpeg");
+        let borders = enimda(&path, 1.0, 100, 2048, 0.25, 0.5, 1.0, 2048, true).unwrap();
         println!("{:?}", borders);
     }
 
@@ -57,3 +59,11 @@ Demo
 For demo please refer to `ENIMDA Demo <https://github.com/embali/enimda-demo/>`_
 
 Also it lives at `Picture Instruments <http://picinst.com/>`_ as 'Remove borders' instrument
+
+Tests
+-----
+
+.. code-block: bash
+
+    cargo test
+    cargo test -- --ignored

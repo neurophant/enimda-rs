@@ -2,7 +2,7 @@
 //!
 //! # Example
 //!
-//! ```rust,ignore
+//! ```rust,ignore,no_run
 //! extern crate enimda;
 //!
 //! use std::path::Path;
@@ -45,15 +45,15 @@ pub struct Borders {
 }
 
 /// Scan image and find its borders
-/// * `path` - path to file to analyze
+/// * `path` - path to image file
 /// * `fppt` - percent of frames to use in case of animated image, optimization parameter
 /// * `flim` - absolute limit of frames to use in case of animated image, optimization parameter
-/// * `size` - fit image to this size to improve performance, in pixels
+/// * `size` - fit image to this size to improve performance, in pixels, optimization parameter
 /// * `depth` - percent of pixels (depth) to use for scanning, use 0.25 if not sure what are you doing
 /// * `thres` - threshold, aggressiveness of algorithm, use 0.5 if not sure what are you doing
-/// * `sppt` - percent of rows to use for scan, optimization parameter
-/// * `slim` - absolute limit of rows to use for scan, optimization parameter
-/// * `deep` - if set to true, scanning will be iterative - less performant but accurate, otherwise quick but inaccurate, optimization parameter
+/// * `sppt` - percent of columns to use for scan, optimization parameter
+/// * `slim` - absolute limit of columns to use for scan, optimization parameter
+/// * `deep` - set to true for less performant but accurate and to false for quick but inaccurate, optimization parameter
 pub fn enimda(path: &Path,
               fppt: f32,
               flim: u32,
@@ -66,6 +66,7 @@ pub fn enimda(path: &Path,
               -> Result<Borders, Box<Error>> {
 
     let inf = info(path)?;
+
     let borders = match inf.format {
         ImageFormat::GIF => {
             let ims = decompose(path, inf.width, inf.height, inf.frames, fppt, flim)?;
