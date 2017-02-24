@@ -63,6 +63,6 @@ Also it lives at `Picture Instruments <http://picinst.com/>`_ as 'Remove borders
 Tests
 -----
 
-.. code-block: bash
+.. code-block:: bash
 
     cargo test
