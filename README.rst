@@ -1,7 +1,7 @@
 ENIMDA
 ======
 
-ENtropy-based IMage border Detection Algorithm: detect border or whitespace offset for every side of image,
+Entropy-based image border detection algorithm: detect border or whitespace offset for every side of image,
 supports animated GIFs.
 
 |crates| |travisci|
