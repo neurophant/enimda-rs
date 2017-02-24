@@ -5,43 +5,13 @@ use std::error::Error;
 use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
-
 use rand::{thread_rng, Rng};
-
 use image;
-use image::{GenericImage, ImageRgba8, DynamicImage, ImageBuffer, Luma, FilterType, ImageFormat,
-            guess_format};
+use image::{GenericImage, ImageRgba8, DynamicImage, ImageBuffer, Luma, FilterType, ImageFormat, guess_format};
 use image::imageops::rotate270;
 use image::imageops::colorops::grayscale;
 use gif::{Decoder, SetParameter, ColorOutput};
 use gif_dispose::Screen;
-
-
-pub fn info(path: &Path) -> Result<(ImageFormat, u32, u32, u32), Box<Error>> {
-    let mut im = File::open(path)?;
-    let mut buf = [0; 16];
-    im.read(&mut buf)?;
-    let format = guess_format(&buf)?;
-
-    let im = image::open(path)?;
-    let (width, height) = im.dimensions();
-
-    let frames = match format {
-        ImageFormat::GIF => {
-            let decoder = Decoder::new(File::open(path)?);
-            let mut reader = decoder.read_info().unwrap();
-            let mut frames = 0;
-            while let Some(_) = reader.next_frame_info().unwrap() {
-                frames += 1;
-            }
-            frames
-        }
-        _ => 1,
-    };
-
-    Ok((format, width, height, frames))
-}
-
 
 fn paginate(total: u32, ppt: f32, lim: u32) -> Result<HashSet<u32>, Box<Error>> {
     let count = (1.0 / ppt).round() as u32;
@@ -61,7 +31,6 @@ fn paginate(total: u32, ppt: f32, lim: u32) -> Result<HashSet<u32>, Box<Error>> 
 
     Ok(HashSet::from_iter(indexes.iter().cloned()))
 }
-
 
 pub fn decompose(path: &Path,
                  width: u32,
@@ -101,7 +70,6 @@ pub fn decompose(path: &Path,
     Ok(ims)
 }
 
-
 fn convert(im: &DynamicImage,
            size: u32)
            -> Result<(f32, ImageBuffer<Luma<u8>, Vec<u8>>), Box<Error>> {
@@ -125,7 +93,6 @@ fn convert(im: &DynamicImage,
     Ok((mul, grayscale(&conv)))
 }
 
-
 fn chop(conv: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
         ppt: f32,
         lim: u32)
@@ -148,7 +115,6 @@ fn chop(conv: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
     Ok(strips)
 }
 
-
 fn entropy(strip: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
            x: u32,
            y: u32,
@@ -169,7 +135,6 @@ fn entropy(strip: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
         acc - (f * f.log2())
     }))
 }
-
 
 pub fn scan(im: &DynamicImage,
             size: u32,
