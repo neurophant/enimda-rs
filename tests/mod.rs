@@ -52,23 +52,47 @@ macro_rules! assert_borders_full {
 #[test]
 #[ignore]
 fn test_bordered_gif_full() {
-    assert_borders_full!("bordered.gif", Borders { top: 41, right: 0, bottom: 39, left: 0 });
+    assert_borders_full!("bordered.gif",
+                         Borders {
+                             top: 41,
+                             right: 0,
+                             bottom: 39,
+                             left: 0,
+                         });
 }
 
 #[test]
 #[ignore]
 fn test_bordered_jpg_full() {
-    assert_borders_full!("bordered.jpg", Borders { top: 4, right: 4, bottom: 4, left: 4 });
+    assert_borders_full!("bordered.jpg",
+                         Borders {
+                             top: 4,
+                             right: 4,
+                             bottom: 4,
+                             left: 4,
+                         });
 }
 
 #[test]
 #[ignore]
 fn test_clear_gif_full() {
-    assert_borders_full!("clear.gif", Borders { top: 0, right: 0, bottom: 0, left: 0 });
+    assert_borders_full!("clear.gif",
+                         Borders {
+                             top: 0,
+                             right: 0,
+                             bottom: 0,
+                             left: 0,
+                         });
 }
 
 #[test]
 #[ignore]
 fn test_clear_jpg_full() {
-    assert_borders_full!("clear.jpg", Borders { top: 0, right: 0, bottom: 0, left: 0 });
+    assert_borders_full!("clear.jpg",
+                         Borders {
+                             top: 0,
+                             right: 0,
+                             bottom: 0,
+                             left: 0,
+                         });
 }

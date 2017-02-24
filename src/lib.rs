@@ -1,4 +1,5 @@
-//! Crate to detect image borders and whitespace using entropy-based image border detection algorithm.
+//! Crate to detect image borders and whitespace using entropy-based image border detection
+//! algorithm.
 //!
 //! # Example
 //!
@@ -49,11 +50,13 @@ pub struct Borders {
 /// * `fppt` - percent of frames to use in case of animated image, optimization parameter
 /// * `flim` - absolute limit of frames to use in case of animated image, optimization parameter
 /// * `size` - fit image to this size to improve performance, in pixels, optimization parameter
-/// * `depth` - percent of pixels (depth) to use for scanning, use 0.25 if not sure what are you doing
+/// * `depth` - percent of pixels (depth) to use for scanning, use 0.25 if not sure what are you
+/// doing
 /// * `thres` - threshold, aggressiveness of algorithm, use 0.5 if not sure what are you doing
 /// * `sppt` - percent of columns to use for scan, optimization parameter
 /// * `slim` - absolute limit of columns to use for scan, optimization parameter
-/// * `deep` - set to true for less performant but accurate and to false for quick but inaccurate, optimization parameter
+/// * `deep` - set to true for less performant but accurate and to false for quick but inaccurate,
+/// optimization parameter
 pub fn enimda(path: &Path,
               fppt: f32,
               flim: u32,
@@ -89,5 +92,10 @@ pub fn enimda(path: &Path,
         }
     };
 
-    Ok(Borders { top: borders[0], right: borders[1], bottom: borders[2], left: borders[3] })
+    Ok(Borders {
+        top: borders[0],
+        right: borders[1],
+        bottom: borders[2],
+        left: borders[3],
+    })
 }
