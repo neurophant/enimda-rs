@@ -32,7 +32,7 @@ mod utils;
 
 use utils::{decompose, scan};
 
-/// enimda function result
+/// Borders location
 #[derive(Debug, PartialEq)]
 pub struct Borders {
     /// Border offset from the top
@@ -66,6 +66,8 @@ pub struct Borders {
 ///
 /// `deep` - set to true for less performant but accurate and to false for quick but inaccurate,
 /// optimization parameter
+///
+/// Returns Borders struct
 pub fn enimda(path: &Path,
               fppt: f32,
               flim: u32,
