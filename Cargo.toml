@@ -8,7 +8,7 @@ repository = "https://github.com/embali/enimda-rs/"
 homepage = "https://github.com/embali/enimda-rs/"
 documentation = "https://docs.rs/enimda/"
 description = """Entropy-based image border detection"""
-keywords = ["image", "enimda", "border", "algorithm", "entropy", "whitespace"]
+keywords = ["image", "enimda", "border", "algorithm", "entropy"]
 categories = ["multimedia::images", "algorithms"]
 exclude = ["tests/images/*"]
 
