@@ -10,7 +10,7 @@ use image::imageops::colorops::grayscale;
 pub fn slice(count: u32, limit: u32) -> Result<HashSet<u32>, Box<Error>> {
     let mut indexes: Vec<u32> = (0..count).collect();
 
-    if limit < count {
+    if limit > 0 && limit < count {
         let mut rng = thread_rng();
         rng.shuffle(&mut indexes);
         let len = indexes.len();
