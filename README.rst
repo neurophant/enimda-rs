@@ -49,7 +49,7 @@ Find image borders:
 
     fn main() {
         let path = Path::new("source.jpeg");
-        let borders = enimda(&path, 1.0, 100, 2048, 0.25, 0.5, 1.0, 2048, true).unwrap();
+        let borders = enimda(&path, Some(10), Some(512), Some(50), Some(0.25), Some(0.5), Some(false)).unwrap();
         println!("{:?}", borders);
     }
 

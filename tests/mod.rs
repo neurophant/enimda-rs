@@ -9,7 +9,8 @@ use enimda::{Borders, enimda};
 macro_rules! assert_borders {
     ($name:expr, $has:expr) => ({
         let borders = enimda(&Path::new(&format!("./tests/images/{}", $name)),
-                             Some(10), Some(256), Some(32), Some(0.25), Some(0.5), Some(false)).unwrap();
+                             Some(10), Some(256), Some(32), Some(0.25), Some(0.5),
+                             Some(false)).unwrap();
         let sum: u32 = borders.top + borders.right + borders.bottom + borders.left;
         assert_eq!(sum != 0, $has)
     })
@@ -35,12 +36,6 @@ fn test_clear_jpg() {
     assert_borders!("clear.jpg", false);
 }
 
-#[test]
-#[should_panic]
-fn test_fail_ppt() {
-    assert_borders!("algorithm.gif", true);
-}
-
 macro_rules! assert_borders_full {
     ($name:expr, $result:expr) => ({
         let borders = enimda(&Path::new(&format!("./tests/images/{}", $name)),
@@ -50,7 +45,6 @@ macro_rules! assert_borders_full {
 }
 
 #[test]
-#[ignore]
 fn test_bordered_gif_full() {
     assert_borders_full!("bordered.gif",
                          Borders {
@@ -62,7 +56,6 @@ fn test_bordered_gif_full() {
 }
 
 #[test]
-#[ignore]
 fn test_bordered_jpg_full() {
     assert_borders_full!("bordered.jpg",
                          Borders {
@@ -74,7 +67,6 @@ fn test_bordered_jpg_full() {
 }
 
 #[test]
-#[ignore]
 fn test_clear_gif_full() {
     assert_borders_full!("clear.gif",
                          Borders {
@@ -86,7 +78,6 @@ fn test_clear_gif_full() {
 }
 
 #[test]
-#[ignore]
 fn test_clear_jpg_full() {
     assert_borders_full!("clear.jpg",
                          Borders {
