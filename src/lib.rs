@@ -25,6 +25,7 @@ extern crate image_utils;
 
 use std::path::Path;
 use std::fs::File;
+use std::io::BufReader;
 use std::error::Error;
 use image::{ImageRgba8, ImageBuffer, ImageFormat};
 use image_utils::info;
@@ -52,14 +53,13 @@ pub struct Borders {
 ///
 /// `path` - path to image file
 ///
-/// `frames` - absolute limit of frames to use in case of animated image, optimization parameter,
-/// no limit by default
+/// `frames` - frame limit to use in case of animated image, optimization parameter, no limit by
+/// default
 ///
 /// `size` - fit image to this size to improve performance, in pixels, optimization parameter, no
 /// resize by default
 ///
-/// `columns` - absolute limit of columns to use for scan, optimization parameter, no limit by
-/// default
+/// `columns` - columns limit to use for scan, optimization parameter, no limit by default
 ///
 /// `depth` - percent of pixels (height) to use for scanning, 0.25 by default
 ///
@@ -121,7 +121,7 @@ pub fn enimda(path: &Path,
             borders
         }
         _ => {
-            let im = image::open(path)?;
+            let im = image::load(BufReader::new(File::open(path)?), inf.format)?;
             scan(&im, size, columns, depth, threshold, deep)?
         }
     };
