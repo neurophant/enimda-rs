@@ -90,6 +90,8 @@ pub fn scan(im: &DynamicImage,
     let threshold = threshold.unwrap_or(0.5);
     let (mul, mut conv) = convert(im, size)?;
     let mut borders = Vec::new();
+    let depth = depth.unwrap_or(0.25);
+    let deep = deep.unwrap_or(true);
 
     for side in 0..4 {
         let mut strips = match columns {
@@ -97,7 +99,7 @@ pub fn scan(im: &DynamicImage,
             None => conv.clone(),
         };
         let (w, h) = strips.dimensions();
-        let height = (depth.unwrap_or(0.25) * h as f32).round() as u32;
+        let height = (depth * h as f32).round() as u32;
         let mut border = 0;
 
         loop {
@@ -130,7 +132,7 @@ pub fn scan(im: &DynamicImage,
 
             border = sub;
 
-            if !deep.unwrap_or(true) {
+            if !deep {
                 break;
             }
         }
