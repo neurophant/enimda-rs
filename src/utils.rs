@@ -11,100 +11,49 @@ use image::imageops::colorops::grayscale;
 use gif::{Decoder, SetParameter, ColorOutput};
 use gif_dispose::Screen;
 
-fn paginate(total: u32, ppt: f32, lim: u32) -> Result<HashSet<u32>, Box<Error>> {
-    let count = (1.0 / ppt).round() as u32;
-    let (int, rem) = (total / count, total % count);
-
-    let mut indexes = Vec::new();
+fn slice(count: u32, limit: u32) -> Result<HashSet<u32>, Box<Error>> {
+    let mut indexes: Vec<u32> = (0..count).collect();
     let mut rng = thread_rng();
-    for page in 0..int {
-        indexes.push(rng.gen_range(page * count, (page + 1) * count));
-    }
-    if rem != 0 {
-        indexes.push(rng.gen_range(int * count, total));
-    }
     rng.shuffle(&mut indexes);
     let len = indexes.len();
-    indexes.truncate(min(len, lim as usize));
+    indexes.truncate(min(len, limit as usize));
 
     Ok(HashSet::from_iter(indexes.iter().cloned()))
 }
 
-pub fn decompose(path: &Path,
-                 width: u32,
-                 height: u32,
-                 frames: u32,
-                 ppt: f32,
-                 lim: u32)
-                 -> Result<Vec<DynamicImage>, Box<Error>> {
-    if ppt < 0.0 || ppt > 1.0 {
-        panic!("0.0 <= ppt <= 1.0 expected");
-    }
-    let frames = paginate(frames, ppt, lim)?;
-
-    let mut decoder = Decoder::new(File::open(path)?);
-    decoder.set(ColorOutput::Indexed);
-    let mut reader = decoder.read_info().unwrap();
-    let mut screen = Screen::new(&reader);
-
-    let mut i = 0;
-    let mut ims = Vec::new();
-    while let Some(frame) = reader.read_next_frame().unwrap() {
-        if ppt == 1.0 || lim == 0 || frames.contains(&i) {
-            screen.blit(&frame)?;
-            let mut buf: Vec<u8> = Vec::new();
-            for pixel in screen.pixels.iter() {
-                buf.push(pixel.r);
-                buf.push(pixel.g);
-                buf.push(pixel.b);
-                buf.push(pixel.a);
-            }
-            ims.push(ImageRgba8(ImageBuffer::from_raw(width, height, buf).unwrap()));
-        }
-
-        i += 1;
-    }
-
-    Ok(ims)
-}
-
-fn convert(im: &DynamicImage,
-           size: u32)
+fn convert(im: &DynamicImage, size: Option<u32>)
            -> Result<(f32, ImageBuffer<Luma<u8>, Vec<u8>>), Box<Error>> {
     let mut conv = im.clone();
-    let (w, h) = conv.dimensions();
+    match size {
+        Some(s) => {
+            let (w, h) = conv.dimensions();
 
-    let mul = match w > size || h > size {
-        true => {
-            match w > h {
-                true => w as f32 / size as f32,
-                false => h as f32 / size as f32,
+            let mul = match w > s || h > s {
+                true => {
+                    match w > h {
+                        true => w as f32 / s as f32,
+                        false => h as f32 / s as f32,
+                    }
+                }
+                false => 1.0,
+            };
+
+            if mul != 1.0 {
+                conv = conv.resize(s, s, FilterType::Lanczos3);
             }
+
+            Ok((mul, grayscale(&conv)))
+        },
+        None => {
+            Ok((1.0, grayscale(&conv)))
         }
-        false => 1.0,
-    };
-
-    if mul != 1.0 {
-        conv = conv.resize(size, size, FilterType::Lanczos3);
     }
-
-    Ok((mul, grayscale(&conv)))
 }
 
-fn chop(conv: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
-        ppt: f32,
-        lim: u32)
+fn chop(conv: &mut ImageBuffer<Luma<u8>, Vec<u8>>, limit: u32)
         -> Result<ImageBuffer<Luma<u8>, Vec<u8>>, Box<Error>> {
-    if ppt < 0.0 || ppt > 1.0 {
-        panic!("0.0 <= ppt <= 1.0 expected");
-    }
-
-    if ppt == 1.0 || lim == 0 {
-        return Ok(conv.clone());
-    }
-
     let (w, h) = conv.dimensions();
-    let rows = paginate(w, ppt, lim)?;
+    let rows = slice(w, limit)?;
     let mut strips: ImageBuffer<Luma<u8>, Vec<u8>> = ImageBuffer::new(rows.len() as u32, h);
     for (i, row) in rows.iter().enumerate() {
         strips.copy_from(&conv.sub_image(*row, 0, 1, h), i as u32, 0);
@@ -135,20 +84,23 @@ fn entropy(strip: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
 }
 
 pub fn scan(im: &DynamicImage,
-            size: u32,
-            depth: f32,
-            thres: f32,
-            ppt: f32,
-            lim: u32,
-            deep: bool)
+            size: Option<u32>,
+            columns: Option<u32>,
+            depth: Option<f32>,
+            threshold: Option<f32>,
+            deep: Option<bool>)
             -> Result<Vec<u32>, Box<Error>> {
+    let thres = threshold.unwrap_or(0.5);
     let (mul, mut conv) = convert(im, size)?;
     let mut borders = Vec::new();
 
     for side in 0..4 {
-        let mut strips = chop(&mut conv, ppt, lim)?;
+        let mut strips = match columns {
+            Some(c) => chop(&mut conv, c)?,
+            None => conv.clone()
+        };
         let (w, h) = strips.dimensions();
-        let height = (depth * h as f32).round() as u32;
+        let height = (depth.unwrap_or(0.25) * h as f32).round() as u32;
         let mut border = 0;
 
         loop {
@@ -181,7 +133,7 @@ pub fn scan(im: &DynamicImage,
 
             border = sub;
 
-            if !deep {
+            if !deep.unwrap_or(true) {
                 break;
             }
         }
@@ -195,3 +147,41 @@ pub fn scan(im: &DynamicImage,
 
     Ok(borders)
 }
+
+//pub fn decompose(path: &Path,
+//                 width: u32,
+//                 height: u32,
+//                 frames: u32,
+//                 ppt: f32,
+//                 lim: u32)
+//                 -> Result<Vec<DynamicImage>, Box<Error>> {
+//    if ppt < 0.0 || ppt > 1.0 {
+//        panic!("0.0 <= ppt <= 1.0 expected");
+//    }
+//    let frames = paginate(frames, ppt, lim)?;
+//
+//    let mut decoder = Decoder::new(File::open(path)?);
+//    decoder.set(ColorOutput::Indexed);
+//    let mut reader = decoder.read_info().unwrap();
+//    let mut screen = Screen::new(&reader);
+//
+//    let mut i = 0;
+//    let mut ims = Vec::new();
+//    while let Some(frame) = reader.read_next_frame().unwrap() {
+//        if ppt == 1.0 || lim == 0 || frames.contains(&i) {
+//            screen.blit(&frame)?;
+//            let mut buf: Vec<u8> = Vec::new();
+//            for pixel in screen.pixels.iter() {
+//                buf.push(pixel.r);
+//                buf.push(pixel.g);
+//                buf.push(pixel.b);
+//                buf.push(pixel.a);
+//            }
+//            ims.push(ImageRgba8(ImageBuffer::from_raw(width, height, buf).unwrap()));
+//        }
+//
+//        i += 1;
+//    }
+//
+//    Ok(ims)
+//}

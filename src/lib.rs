@@ -10,7 +10,7 @@
 //! use enimda::enimda;
 //!
 //! let path = Path::new("test.jpg");
-//! let borders = enimda(&path, 1.0, 100, 2048, 0.25, 0.5, 1.0, 2048, true)?;
+//! let borders = enimda(&path, Some(100), Some(2048), Some(50), 0.25, 0.5, true)?;
 //!
 //! println!("{:?}", borders);
 //! ```
@@ -30,7 +30,7 @@ use image_utils::info;
 
 mod utils;
 
-use utils::{decompose, scan};
+use utils::{scan};
 
 /// Borders location
 #[derive(Debug, PartialEq)]
@@ -49,57 +49,48 @@ pub struct Borders {
 ///
 /// `path` - path to image file
 ///
-/// `fppt` - percent of frames to use in case of animated image, optimization parameter
+/// `frames` - absolute limit of frames to use in case of animated image, optimization parameter, no limit by default
 ///
-/// `flim` - absolute limit of frames to use in case of animated image, optimization parameter
+/// `size` - fit image to this size to improve performance, in pixels, optimization parameter, no resize by default
 ///
-/// `size` - fit image to this size to improve performance, in pixels, optimization parameter
+/// `columns` - absolute limit of columns to use for scan, optimization parameter, no limit by default
 ///
-/// `depth` - percent of pixels (depth) to use for scanning, use 0.25 if not sure what are you
-/// doing
+/// `depth` - percent of pixels (height) to use for scanning, 0.25 by default
 ///
-/// `thres` - threshold, aggressiveness of algorithm, use 0.5 if not sure what are you doing
-///
-/// `sppt` - percent of columns to use for scan, optimization parameter
-///
-/// `slim` - absolute limit of columns to use for scan, optimization parameter
+/// `threshold` - threshold, aggressiveness of algorithm, 0.5 by default
 ///
 /// `deep` - set to true for less performant but accurate and to false for quick but inaccurate,
-/// optimization parameter
+/// optimization parameter, true by default
 ///
 /// Returns Borders struct
 pub fn enimda(path: &Path,
-              fppt: f32,
-              flim: u32,
-              size: u32,
-              depth: f32,
-              thres: f32,
-              sppt: f32,
-              slim: u32,
-              deep: bool)
+              frames: Option<u32>,
+              size: Option<u32>,
+              columns: Option<u32>,
+              depth: Option<f32>,
+              threshold: Option<f32>,
+              deep: Option<bool>)
               -> Result<Borders, Box<Error>> {
 
     let inf = info(path)?;
 
     let borders = match inf.format {
         ImageFormat::GIF => {
-            let ims = decompose(path, inf.width, inf.height, inf.frames, fppt, flim)?;
-
-            let mut borders = vec![0, 0, 0, 0];
-            for im in ims.iter() {
-                let variant = scan(&im, size, depth, thres, sppt, slim, deep)?;
-                for i in 0..borders.len() {
-                    if variant[i] == 0 || borders[i] < variant[i] {
-                        borders[i] = variant[i];
-                    }
-                }
-            }
-
-            borders
+            vec![0, 0, 0, 0]
+//            decompose(path, frames, size, columns, depth, threshold, deep)?
+//            let mut borders = vec![0, 0, 0, 0];
+//            for im in ims.iter() {
+//                let variant = scan(&im, size, depth, threshold, sppt, slim, deep)?;
+//                for i in 0..borders.len() {
+//                    if variant[i] == 0 || borders[i] < variant[i] {
+//                        borders[i] = variant[i];
+//                    }
+//                }
+//            }
         }
         _ => {
             let im = image::open(path)?;
-            scan(&im, size, depth, thres, sppt, slim, deep)?
+            scan(&im, size, columns, depth, threshold, deep)?
         }
     };
 
