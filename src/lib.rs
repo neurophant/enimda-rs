@@ -56,7 +56,7 @@ pub struct Borders {
 /// `frames` - frame limit to use in case of animated image, optimization parameter, no limit by
 /// default
 ///
-/// `size` - fit image to this size to improve performance, in pixels, optimization parameter, no
+/// `size` - fit image to this size in pixels to improve performance, optimization parameter, no
 /// resize by default
 ///
 /// `columns` - columns limit to use for scan, optimization parameter, no limit by default
