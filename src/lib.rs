@@ -54,19 +54,19 @@ pub struct Borders {
 /// `path` - path to image file
 ///
 /// `frames` - frame limit to use in case of animated image, optimization parameter, no limit by
-/// default
+/// default, if set then random frames will be used for scan
 ///
 /// `size` - fit image to this size in pixels to improve performance, optimization parameter, no
 /// resize by default
 ///
-/// `columns` - columns limit to use for scan, optimization parameter, no limit by default
+/// `columns` - column limit to use for scan, optimization parameter, no limit by default, if set
+/// then random columns will be used for scan
 ///
-/// `depth` - percent of pixels (height) to use for scanning, 0.25 by default
+/// `depth` - percent of pixels of image height to use for scan, 0.25 by default
 ///
 /// `threshold` - threshold, aggressiveness of algorithm, 0.5 by default
 ///
-/// `deep` - set to true for less performant but accurate and to false for quick but inaccurate
-/// scan, optimization parameter, true by default
+/// `deep` - iteratively find deep borders, true by default (less performant, but more accurate)
 ///
 /// Returns Borders struct
 pub fn enimda(path: &Path,

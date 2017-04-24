@@ -21,42 +21,40 @@ pub fn slice(count: u32, limit: u32) -> Result<HashSet<u32>, Box<Error>> {
 }
 
 fn convert(im: &DynamicImage,
-           size: Option<u32>)
+           size: u32)
            -> Result<(f32, ImageBuffer<Luma<u8>, Vec<u8>>), Box<Error>> {
     let mut conv = im.clone();
+    let (w, h) = conv.dimensions();
 
-    match size {
-        Some(size) => {
-            let (w, h) = conv.dimensions();
-
-            let mul = match w > size || h > size {
-                true => {
-                    conv = conv.resize(size, size, FilterType::Lanczos3);
-                    match w > h {
-                        true => w as f32 / size as f32,
-                        false => h as f32 / size as f32,
-                    }
-                }
-                false => 1.0,
-            };
-
-            Ok((mul, grayscale(&conv)))
+    let mul = match size > 0 && (w > size || h > size) {
+        true => {
+            conv = conv.resize(size, size, FilterType::Lanczos3);
+            match w > h {
+                true => w as f32 / size as f32,
+                false => h as f32 / size as f32,
+            }
         }
-        None => Ok((1.0, grayscale(&conv))),
-    }
+        false => 1.0,
+    };
+
+    Ok((mul, grayscale(&conv)))
 }
 
 fn chop(conv: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
         limit: u32)
         -> Result<ImageBuffer<Luma<u8>, Vec<u8>>, Box<Error>> {
-    let (w, h) = conv.dimensions();
-    let rows = slice(w, limit)?;
-    let mut strips: ImageBuffer<Luma<u8>, Vec<u8>> = ImageBuffer::new(rows.len() as u32, h);
-    for (i, row) in rows.iter().enumerate() {
-        strips.copy_from(&conv.sub_image(*row, 0, 1, h), i as u32, 0);
-    }
-
-    Ok(strips)
+    Ok(match limit > 0 {
+        true => {
+            let (w, h) = conv.dimensions();
+            let rows = slice(w, limit)?;
+            let mut strips: ImageBuffer<Luma<u8>, Vec<u8>> = ImageBuffer::new(rows.len() as u32, h);
+            for (i, row) in rows.iter().enumerate() {
+                strips.copy_from(&conv.sub_image(*row, 0, 1, h), i as u32, 0);
+            }
+            strips
+        }
+        false => conv.clone(),
+    })
 }
 
 fn entropy(strip: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
@@ -88,16 +86,13 @@ pub fn scan(im: &DynamicImage,
             deep: Option<bool>)
             -> Result<Vec<u32>, Box<Error>> {
     let threshold = threshold.unwrap_or(0.5);
-    let (mul, mut conv) = convert(im, size)?;
+    let (mul, mut conv) = convert(im, size.unwrap_or(0))?;
     let mut borders = Vec::new();
     let depth = depth.unwrap_or(0.25);
     let deep = deep.unwrap_or(true);
 
     for side in 0..4 {
-        let mut strips = match columns {
-            Some(columns) => chop(&mut conv, columns)?,
-            None => conv.clone(),
-        };
+        let mut strips = chop(&mut conv, columns.unwrap_or(0))?;
         let (w, h) = strips.dimensions();
         let height = (depth * h as f32).round() as u32;
         let mut border = 0;
@@ -129,9 +124,7 @@ pub fn scan(im: &DynamicImage,
             if sub == 0 || border == sub {
                 break;
             }
-
             border = sub;
-
             if !deep {
                 break;
             }

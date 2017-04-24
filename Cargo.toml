@@ -1,6 +1,6 @@
 [package]
 name = "enimda"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Anton Smolin"]
 license = "MIT"
 readme = "README.rst"
